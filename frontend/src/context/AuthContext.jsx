@@ -10,7 +10,8 @@
     return context;
   };
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://house-hold-services.onrender.com';
+  const API_BASE_URL =import.meta.env.VITE_API_URL || 'https://house-hold-services-production.up.railway.app/api';
+
 
   export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
