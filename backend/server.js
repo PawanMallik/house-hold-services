@@ -8,11 +8,11 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || '40611492e3a8327a9d9a2927ddc37c7d83696172b3f373162a844228817d541d46ba6945fd316c0c8b69f6524e5ee5fa7edc51ac1817f2898ac13111f4837a2e';
-
+const corsOrigin = process.env.CORS_ORIGIN || '*';
 // Middleware
 app.use(cors({
-  origin: "https://house-hold-services-ukhy.vercel.app/", // your frontend
-  credentials: true
+  origin: corsOrigin,
+  credentials: true,
 }));
 app.use(express.json());
 
