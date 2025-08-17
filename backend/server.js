@@ -173,6 +173,11 @@ app.get('/api/services', (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.send('Household Services API is running');
+});
+
+
 // Create a booking
 app.post('/api/bookings', authenticateToken, (req, res) => {
   try {
