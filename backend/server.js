@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || '40611492e3a8327a9d9a2927ddc37c7d83
 
 // Middleware
 app.use(cors({
-  origin: "https://your-frontend-url.vercel.app", // your frontend
+  origin: "https://house-hold-services-ukhy.vercel.app/", // your frontend
   credentials: true
 }));
 app.use(express.json());
