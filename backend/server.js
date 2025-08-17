@@ -57,18 +57,20 @@ app.get('/', (req, res) => {
 
 // Get all services
 app.get('/api/services', (req, res) => {
-  const query = `
-    SELECT id, name, description, base_price, duration_hours, category
-    FROM services
-    WHERE is_active = TRUE
-  `;
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Database error' });
-    }
-    res.json(results);
-  });
+  // const query = `
+  //   SELECT id, name, description, base_price, duration_hours, category
+  //   FROM services
+  //   WHERE is_active = TRUE
+  // `;
+  // db.query(query, (err, results) => {
+  //   if (err) {
+  //     console.error('Database error:', err);
+  //     return res.status(500).json({ error: 'Database error' });
+  //   }
+  //   res.json(results);
+  // });
+    res.send('Household Services API is running in services');
+
 });
 
 // User registration
