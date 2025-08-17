@@ -70,7 +70,7 @@ app.get('/api/services', (req, res) => {
   db.query(query, (err, results) => {
     if (err) {
       console.error('Database error:', err);
-      return res.status(500).json({ error: 'Database error' });
+      return res.status(500).json({ error: 'Database error ()' });
     }
     res.json(results);
   });
