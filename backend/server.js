@@ -61,19 +61,22 @@ app.get('/api/test-db', (req, res) => {
 });
 
 // Get all services
-app.get('/api/services', (req, res) => {
+// Refactored with async/await
+app.get('/api/services', async (req, res) => {
   const query = `
     SELECT id, name, description, base_price, duration_hours, category
     FROM services
     WHERE is_active = TRUE
   `;
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Database error ()' });
-    }
+  try {
+    // Assuming you're using the promise-based version of mysql2
+    const [results] = await db.query(query);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Database error fetching services:', err);
+    // Provide a clear, complete error message
+    res.status(500).json({ error: 'Failed to retrieve services' });
+  }
 });
 
 // User registration
