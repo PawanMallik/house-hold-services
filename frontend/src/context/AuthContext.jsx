@@ -190,20 +190,23 @@
       }
     };
 
-    const getServices = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/services`);
-        
-        if (response.ok) {
-          const services = await response.json();
-          return { success: true, services };
-        } else {
-          return { success: false, error: 'Failed to fetch services' };
-        }
-      } catch (error) {
-        return { success: false, error: 'Failed to fetch services' };
-      }
-    };
+   const getServices = async () => {
+  try {
+    // Corrected endpoint to match backend route
+    const response = await fetch(`${API_BASE_URL}/api/services`);
+    
+    if (response.ok) {
+      const services = await response.json();
+      return { success: true, services };
+    } else {
+      const errorData = await response.json();
+      return { success: false, error: errorData.error || 'Failed to fetch services' };
+    }
+  } catch (error) {
+    return { success: false, error: 'Failed to fetch services' };
+  }
+};
+
 
     const value = {
       user,
