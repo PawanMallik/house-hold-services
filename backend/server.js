@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Database connection
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'crossover.proxy.rlwy.net',
+  host: process.env.DB_HOST || 'containers-us-west-57.railway.app',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'MbZKniDcWFYCpknYwHeONmDHaOghtCex',
   database: process.env.DB_NAME || 'railway'
