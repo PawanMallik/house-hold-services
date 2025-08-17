@@ -15,17 +15,16 @@ app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 
 // Database connection (Railway MySQL with SSL)
-const db = mysql.createConnection({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
-  ssl: {
-    rejectUnauthorized: false, // ✅ Fix for Railway MySQL
-  },
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
-
 
 db.connect((err) => {
   if (err) {
@@ -149,3 +148,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+module.exports = pool;
