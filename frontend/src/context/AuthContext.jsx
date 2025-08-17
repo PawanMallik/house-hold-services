@@ -193,7 +193,7 @@
    const getServices = async () => {
   try {
     // Corrected endpoint to match backend route
-    const response = await fetch(`${API_BASE_URL}/api/services`);
+    const response = await fetch(`${API_BASE_URL}/services`);
     
     if (response.ok) {
       const services = await response.json();
