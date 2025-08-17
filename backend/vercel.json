@@ -1,14 +1,27 @@
 {
-  "build":[
+  "version": 2,
+  "name": "household-services-app",
+  "builds": [
     {
-      "src": "./server.js",
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/**/*.js",
       "use": "@vercel/node"
     }
   ],
-  "routes":[
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/$1.js"
+    },
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/frontend/dist/$1"
     }
   ]
 }
