@@ -131,6 +131,18 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
   });
 });
 
+//test purpose only
+app.get('/test-db', (req, res) => {
+  db.query('SELECT 1 + 1 AS result', (err, results) => {
+    if (err) {
+      console.error('Test query failed:', err);
+      return res.status(500).json({ error: 'DB connection failed', details: err.message });
+    }
+    res.json({ success: true, result: results[0].result });
+  });
+});
+
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
