@@ -1,34 +1,155 @@
+// server.js
 const express = require('express');
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
+// Middleware
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 
-// MySQL connection
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || '',
-  database: process.env.DB_NAME || 'servicehub',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+// Database connection (Railway MySQL with SSL)
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  ssl: { rejectUnauthorized: false }
 });
 
-// ✅ Test DB Route
-app.get('/api/test/db', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT NOW() as time');
-    res.json({ success: true, db_time: rows[0].time });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+db.connect((err) => {
+  if (err) {
+    console.error('❌ Database connection failed:', err.message);
+    return;
   }
+  console.log('✅ Connected to MySQL database');
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ==================== Middleware ====================
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Access token required' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+    req.user = user;
+    next();
+  });
+};
+
+// ==================== Routes ====================
+
+// Health check
+app.get('/', (req, res) => {
+  res.send('🚀 Household Services API is running');
+});
+
+// ✅ Test DB connection
+app.get('/api/test-db', (req, res) => {
+  db.query('SELECT 1 + 1 AS result', (err, results) => {
+    if (err) {
+      console.error('❌ Test query failed:', err.message);
+      return res.status(500).json({ error: 'DB connection failed', details: err.message });
+    }
+    res.json({ success: true, result: results[0].result });
+  });
+});
+
+// ✅ Get all active services
+app.get('/api/services', (req, res) => {
+  const query = `
+    SELECT id, name, description, base_price, duration_hours, category
+    FROM services
+    WHERE is_active = TRUE
+  `;
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ Services query failed:', err.message);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json(results);
+  });
+});
+
+// ✅ Register user
+app.post('/api/auth/register', async (req, res) => {
+  const { fullName, email, phone, password } = req.body;
+
+  if (!fullName || !email || !phone || !password) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  const checkUser = 'SELECT id FROM users WHERE email = ?';
+  db.query(checkUser, [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (results.length > 0) return res.status(400).json({ error: 'User already exists' });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const insertUser = `
+      INSERT INTO users (full_name, email, phone, password_hash, is_active)
+      VALUES (?, ?, ?, ?, TRUE)
+    `;
+    db.query(insertUser, [fullName, email, phone, passwordHash], (err, result) => {
+      if (err) return res.status(500).json({ error: 'Failed to create user' });
+
+      const userId = result.insertId;
+      const token = jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: '7d' });
+
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        token,
+        user: { id: userId, fullName, email, phone }
+      });
+    });
+  });
+});
+
+// ✅ Login user
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  const query = 'SELECT id, full_name, email, phone, password_hash FROM users WHERE email = ? AND is_active = TRUE';
+
+  db.query(query, [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (results.length === 0) return res.status(401).json({ error: 'Invalid email or password' });
+
+    const user = results[0];
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) return res.status(401).json({ error: 'Invalid email or password' });
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: { id: user.id, fullName: user.full_name, email: user.email, phone: user.phone }
+    });
+  });
+});
+
+// ✅ Get current user profile
+app.get('/api/auth/me', authenticateToken, (req, res) => {
+  const query = 'SELECT id, full_name, email, phone FROM users WHERE id = ? AND is_active = TRUE';
+  db.query(query, [req.user.userId], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (results.length === 0) return res.status(404).json({ error: 'User not found' });
+    res.json(results[0]);
+  });
+});
+
+// ==================== Start Server ====================
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
+
+module.exports = app;
