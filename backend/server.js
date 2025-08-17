@@ -15,11 +15,17 @@ app.use(express.json());
 
 // Database connection
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'crossover.proxy.rlwy.net',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'Pawan@123',
-  database: process.env.DB_NAME || 'servicehub'
+  password: process.env.DB_PASSWORD || 'MbZKniDcWFYCpknYwHeONmDHaOghtCex',
+  database: process.env.DB_NAME || 'railway'
 });
+// const db = mysql.createConnection({
+//   host: process.env.DB_HOST || 'localhost',
+//   user: process.env.DB_USER || 'root',
+//   password: process.env.DB_PASSWORD || 'Pawan@123',
+//   database: process.env.DB_NAME || 'servicehub'
+// });
 
 // Connect to database
 db.connect((err) => {
