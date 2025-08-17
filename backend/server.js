@@ -16,13 +16,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Database connection
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'containers-us-west-57.railway.app',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'MbZKniDcWFYCpknYwHeONmDHaOghtCex',
-  database: process.env.DB_NAME || 'railway'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  ssl: {
+    rejectUnauthorized: true, // important for Railway MySQL
+  }
 });
+
 // const db = mysql.createConnection({
 //   host: process.env.DB_HOST || 'localhost',
 //   user: process.env.DB_USER || 'root',
