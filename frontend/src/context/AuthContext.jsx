@@ -10,8 +10,7 @@
     return context;
   };
 
-  const API_BASE_URL =import.meta.env.VITE_API_URL || 'https://house-hold-services-production.up.railway.app/api';
-
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -191,23 +190,20 @@
       }
     };
 
-   const getServices = async () => {
-  try {
-    // Corrected endpoint to match backend route
-    const response = await fetch(`${API_BASE_URL}/api/services`);
-    
-    if (response.ok) {
-      const services = await response.json();
-      return { success: true, services };
-    } else {
-      const errorData = await response.json();
-      return { success: false, error: errorData.error || 'Failed to fetch services' };
-    }
-  } catch (error) {
-    return { success: false, error: 'Failed to fetch services' };
-  }
-};
-
+    const getServices = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/services`);
+        
+        if (response.ok) {
+          const services = await response.json();
+          return { success: true, services };
+        } else {
+          return { success: false, error: 'Failed to fetch services' };
+        }
+      } catch (error) {
+        return { success: false, error: 'Failed to fetch services' };
+      }
+    };
 
     const value = {
       user,
