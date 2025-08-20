@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import Navigation from './components/common/Navigation';
 import Footer from './components/common/Footer';
@@ -11,6 +11,25 @@ import DashboardPage from './pages/DashboardPage';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
+
+  // ✅ update history when page changes
+  useEffect(() => {
+    window.history.pushState({ page: currentPage }, "", `#${currentPage}`);
+  }, [currentPage]);
+
+  // ✅ handle back button
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state?.page) {
+        setCurrentPage(event.state.page);
+      } else {
+        setCurrentPage('home'); // default if no state
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
